@@ -161,13 +161,13 @@ _Right :: (a + b) >= b
 
 -- once again, these are true via parametricity, more or less
 one_div :: a .| I 
-one_div = lens (const ()) const
+one_div = (rev id_mul) . _2  -- lens (const ()) const
 
 zero_lte :: a >= O
-zero_lte = prism' absurd (const Nothing)
+zero_lte = (rev id_plus) . _Right -- prism' absurd (const Nothing)
 
 zero_div :: O .| a
-zero_div = lens absurd const
+zero_div = (rev mul_zero) . _1 -- lens absurd const
 
 
 
