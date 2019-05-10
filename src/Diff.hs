@@ -82,6 +82,9 @@ instance Subtract a b c d => Subtract (I + a) (I + b) (I + c) (I + d) where --
 -- The pair of a and b, such that the only meaning is (a - b), analog of the pair formulation of fractions.
 type Negative a b c d = (a + c) ~~ (b + d)
 
+What I'm trying to channel is that negative numbers are an equivlaence class of (a,b) such that (a,b) ~~ (c,d) if a + d ~~ b + c
+    can we cut out the middle man of the tuple, since tuples are hard to come by here. 
+
 -- Can they be added and subtracted?
 nadd :: N a b -> N c d -> N (a + c) (b + d)
 nadd f g = bimapping f g . _ -- then we need to reduce the two. We have for terms on each side. we need the subthereom
@@ -114,6 +117,7 @@ nadd :: N a b -> N c d -> N (a + c) (b + d)
 nadd (N f) (N g) = (bimapping f g) . _
 -}
 
+-- is this even right? shouldn't the forall d wrap... No this is right.
 existsplus'' :: forall c d. (forall a b. a + b ~~ c) -> d ~~ c
 existsplus'' f = (rev id_plus) . f
 existsplus' :: forall c a b. (forall d. d ~~ c) ->  a + b ~~ c
@@ -215,9 +219,72 @@ type family SearchTransformations x where
 
 
 
+Is there any way that equivalences of equivlaences doesn't give garbage?
+(ReifiedIso a b) ~~ (ReifiedIso c d)
+
+ReifiedIso () () ~~ ReifiedIso () ()
+ = id
+considered modulo isomorphisms, seems like a ReifiedIso is unique.
 
 
 
+-- It's like a DSL for logic formula
+-- Or a DSL for a simple boolean programming language
+data BDD a b a' b' where
+    Root :: a b () 
+    End :: a b a' (AllVals b)
+    Share :: BDD a b (a',a') a'
+    Decide :: BDD a b a' (a',a')
+    Compose :: 
+    // Fst, Snd, shouldn't be necessary
+    Assoc :: -- assoc seems stupid. Just make associative by default
+
+-- Yeah if I was gonna build a point free programming language with sharing
+-- And it has canonical forms? Like all the fusion rules are so...
+
+-- BDDs are a programming language. for finite types... where the variables have to be inspected in a particular order.
+-- And then completing fusion gives a canonical form?
+
+
+env = '[]
+
+data 
+   ITE (a : )
+   Skip (b : bs) bs
+ 
+
+-- case takes something off the input stack and puts it on the world's tree?
+Case :: (b : bs) ws bs (ws ++ ws)
+-- Skip takes off the stack but doesn't add to worlds
+Skip :: (b : bs) 
+-- join fuses worlds.
+Join :: l (() : () : ws) l (() : w')
+
+-- return has empty input stack and can reduce the worlds
+Return :: '[] (() : w2) '[] w2
+
+Join :: (a,b) () -- we can join any two arbitrary world sets into a single world. 
+-- That is sligthly more efficient we only have to get all the worlds together under a signle heading. 
+Join :: Proxy n -> Proxy m -> BDD ws (Fuse n m ws)
+
+-- less fancy types what I've built is this implicit form. I'm indexing into the worlds I've built.
+-- this is not canonical unless the joins are sorted or something, or happen as early as they can.
+-- or as late as they can. right before the node they are casing
+data BDD = Case BDD | Skip BDD | Join Int Int BDD
+type JoinList = [(Int,Int)]
+data BDD = Case JoinList BDD | Skip BDD | Final resullt JoinList
+
+Curry?
+
+-- we also need world manipulation swap, assoc. Which is trash.
+we don't really want a worlds stack or tree. we want to just be able to freely grab worlds.
+The non canonical form of the world manipulations will suck
+
+
+Then the total type we desire is BDD '[b,b,b,b,b] () '[] ()
+worlds tracks the total number of lines we have at each spot.
+
+We've replaced pointerful sharing with implcit sequential mutation or something. It's goofy.
 
 
 -}
